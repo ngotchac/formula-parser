@@ -195,7 +195,7 @@ describe('.parse() math-trig formulas', () => {
     expect(parser.parse('DEGREES()')).toMatchObject({error: '#VALUE!', result: null});
     expect(parser.parse('DEGREES("value")')).toMatchObject({error: '#VALUE!', result: null});
     expect(parser.parse('DEGREES(PI())')).toMatchObject({error: null, result: 180});
-    expect(parser.parse('DEGREES(PI() / 2)')).toMatchObject({error: null, result: 90});
+    expect(parser.parse('DEGREES(PI() / 2)')).toBeMatchCloseTo({error: null, result: 90});
     expect(parser.parse('DEGREES(1.1)')).toBeMatchCloseTo({error: null, result: 63.02535746439057});
   });
 

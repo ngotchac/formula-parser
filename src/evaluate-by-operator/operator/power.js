@@ -5,7 +5,7 @@ import { ERROR_VALUE } from './../../error';
 export const SYMBOL = '^';
 
 export default function func(exp1, exp2) {
-  if (!Number.isInteger(toNumber(exp2))) {
+  if (!Number.isFinite(toNumber(exp2))) {
     throw Error(ERROR_VALUE);
   }
 
