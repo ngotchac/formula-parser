@@ -39,7 +39,7 @@ describe('.parse() coordinates', () => {
       label: 'A1',
       row: {index: 0, isAbsolute: false, label: '1'},
       column: {index: 0, isAbsolute: false, label: 'A'},
-      sheet: 'MASTER'
+      sheet: 'MASTER',
     });
 
     expect(parser.parse('MASTER!a1')).to.deep.equal({error: null, result: 66});

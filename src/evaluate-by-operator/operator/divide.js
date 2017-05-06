@@ -1,6 +1,6 @@
+import Decimal from 'decimal.js';
 import { toNumber } from './../../helper/number';
 import { ERROR_DIV_ZERO, ERROR_VALUE } from './../../error';
-import Decimal from 'decimal.js';
 
 export const SYMBOL = '/';
 
@@ -27,8 +27,6 @@ export default function func(first, ...rest) {
 
     throw Error(ERROR_VALUE);
   }
-
-  return result;
 }
 
 func.SYMBOL = SYMBOL;

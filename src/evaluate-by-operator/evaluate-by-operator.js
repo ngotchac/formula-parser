@@ -13,7 +13,6 @@ import multiply from './operator/multiply';
 import notEqual from './operator/not-equal';
 import power from './operator/power';
 import {ERROR_NAME} from './../error';
-import Decimal from 'decimal.js';
 
 const availableOperators = Object.create(null);
 

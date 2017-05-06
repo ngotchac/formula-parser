@@ -1,6 +1,6 @@
+import Decimal from 'decimal.js';
 import { toNumber } from './../../helper/number';
 import { ERROR_VALUE } from './../../error';
-import Decimal from 'decimal.js';
 
 export const SYMBOL = '^';
 

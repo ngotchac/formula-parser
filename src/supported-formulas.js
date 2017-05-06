@@ -392,7 +392,7 @@ const SUPPORTED_FORMULAS = [
   'VLOOKUP',
   'HLOOKUP',
   'IFERROR',
-  'IFNA'
+  'IFNA',
 ];
 
 export default SUPPORTED_FORMULAS;
