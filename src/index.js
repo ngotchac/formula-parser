@@ -1,6 +1,6 @@
-import {Parser, SUPPORTED_FORMULAS} from './src/parser';
-import {
-  default as error,
+import Parser from './parser';
+import SUPPORTED_FORMULAS from './supported-formulas';
+import error, {
   ERROR,
   ERROR_DIV_ZERO,
   ERROR_NAME,
@@ -8,16 +8,16 @@ import {
   ERROR_NULL,
   ERROR_NUM,
   ERROR_REF,
-  ERROR_VALUE
-} from './src/error';
+  ERROR_VALUE,
+} from './error';
 import {
   extractLabel,
   toLabel,
   columnIndexToLabel,
   columnLabelToIndex,
   rowIndexToLabel,
-  rowLabelToIndex
-} from './src/helper/cell';
+  rowLabelToIndex,
+} from './helper/cell';
 
 export {
   SUPPORTED_FORMULAS,
@@ -36,5 +36,5 @@ export {
   columnIndexToLabel,
   columnLabelToIndex,
   rowIndexToLabel,
-  rowLabelToIndex
+  rowLabelToIndex,
 };

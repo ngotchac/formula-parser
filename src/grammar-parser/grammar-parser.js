@@ -71,7 +71,7 @@
     recoverable: (boolean: TRUE when the parser has a error recovery rule available for this particular error)
   }
 */
-var parser = (function(){
+var grammarParser = (function(){
 var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,5],$V1=[1,8],$V2=[1,6],$V3=[1,7],$V4=[1,9],$V5=[1,10],$V6=[1,11],$V7=[1,19],$V8=[1,20],$V9=[1,21],$Va=[1,22],$Vb=[1,17],$Vc=[1,18],$Vd=[1,23],$Ve=[1,25],$Vf=[1,26],$Vg=[1,27],$Vh=[1,28],$Vi=[1,29],$Vj=[1,30],$Vk=[1,31],$Vl=[1,32],$Vm=[1,33],$Vn=[1,34],$Vo=[5,9,10,11,13,14,15,16,17,18,19,20,35,36],$Vp=[5,9,10,11,13,14,15,16,17,18,19,20,35,36,38],$Vq=[5,9,10,11,13,14,15,16,17,18,19,20,35,36,40],$Vr=[5,10,11,13,14,15,16,17,35,36],$Vs=[5,10,13,14,15,16,35,36],$Vt=[5,10,11,13,14,15,16,17,18,19,35,36],$Vu=[13,35,36];
 var parser = {trace: function trace() { },
 yy: {},
@@ -982,9 +982,9 @@ return new Parser;
 
 
 if (typeof require !== 'undefined' && typeof exports !== 'undefined') {
-exports.parser = parser;
-exports.Parser = parser.Parser;
-exports.parse = function () { return parser.parse.apply(parser, arguments); };
+exports.parser = grammarParser;
+exports.Parser = grammarParser.Parser;
+exports.parse = function () { return grammarParser.parse.apply(grammarParser, arguments); };
 exports.main = function commonjsMain(args) {
     if (!args[1]) {
         console.log('Usage: '+args[0]+' FILE');

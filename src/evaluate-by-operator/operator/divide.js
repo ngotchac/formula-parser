@@ -27,6 +27,8 @@ export default function func(first, ...rest) {
 
     throw Error(ERROR_VALUE);
   }
-};
+
+  return result;
+}
 
 func.SYMBOL = SYMBOL;

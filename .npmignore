@@ -1,6 +1,16 @@
-# Editor conf
+# Conf
+.babelrc
+.codeclimate.yml
+.editorconfig
+.eslintignore
+.eslintrc
+.gitignore
 .idea
+.jscsrc
+.release.json
+.travis.yml
 dump.rdb
+webpack.config.js
 
 # Logs
 logs
@@ -14,11 +24,12 @@ pids
 coverage
 node_modules
 bower_components
+test
+src
 
 # Common
 tmp
 .DS_Store
 */.DS_Store
 */*/.DS_Store
-lib-cov
 dev.html

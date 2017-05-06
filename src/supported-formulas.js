@@ -395,4 +395,4 @@ const SUPPORTED_FORMULAS = [
   'IFNA'
 ];
 
-export {SUPPORTED_FORMULAS as default};
+export default SUPPORTED_FORMULAS;

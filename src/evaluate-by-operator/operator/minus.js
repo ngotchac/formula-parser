@@ -18,6 +18,8 @@ export default function func(first, ...rest) {
   } catch (error) {
     throw Error(ERROR_VALUE);
   }
-};
+
+  return result;
+}
 
 func.SYMBOL = SYMBOL;
