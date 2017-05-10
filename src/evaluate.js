@@ -1,10 +1,10 @@
 import evaluateByOperator from './evaluate-by-operator/evaluate-by-operator';
-import {ERROR_NAME} from './error';
+import errorParser, {ERROR, ERROR_NAME} from './error';
 
-export default function evaluate(object, options) {
-  if (typeof object === 'object' && object.func) {
+function _evaluate(object, options) {
+  if (object && typeof object === 'object' && object.func) {
     let { func, args = [], value } = object;
-    let evalArgs = evaluate(args, options);
+    let evalArgs = _evaluate(args, options);
 
     if (func === '_evaluateByOperator') {
       value = evaluateByOperator(...evalArgs);
@@ -52,8 +52,35 @@ export default function evaluate(object, options) {
   }
 
   if (Array.isArray(object)) {
-    return object.map((o) => evaluate(o, options));
+    return object.map((o) => _evaluate(o, options));
   }
 
   return object;
+}
+
+export default function evaluate(parsed, options) {
+  let result = null;
+  let error = null;
+
+  try {
+    result = _evaluate(parsed, options);
+  } catch (ex) {
+    const message = errorParser(ex.message);
+
+    if (message) {
+      error = message;
+    } else {
+      error = errorParser(ERROR);
+    }
+  }
+
+  if (result instanceof Error) {
+    error = errorParser(result.message) || errorParser(ERROR);
+    result = null;
+  }
+
+  return {
+    result,
+    error,
+  };
 }

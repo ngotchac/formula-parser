@@ -236,7 +236,7 @@ describe('Parser', () => {
         label: 'B$9',
       };
 
-      expect(cb).toHaveBeenCalledWith(startCell, endCell, undefined, expect.anything());
+      expect(cb).toHaveBeenCalledWith(startCell, endCell, expect.anything());
     });
 
     it('should convert coordinates in top-left bottom-right format (from top-right to bottom-left)', () => {
@@ -256,7 +256,7 @@ describe('Parser', () => {
         label: 'B$8',
       };
 
-      expect(cb).toHaveBeenCalledWith(startCell, endCell, undefined, expect.anything());
+      expect(cb).toHaveBeenCalledWith(startCell, endCell, expect.anything());
     });
   });
 

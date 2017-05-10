@@ -1,3 +1,4 @@
+import evaluate from './evaluate';
 import Parser from './parser';
 import SUPPORTED_FORMULAS from './supported-formulas';
 import error, {
@@ -31,6 +32,7 @@ export {
   ERROR_VALUE,
   Parser,
   error,
+  evaluate,
   extractLabel,
   toLabel,
   columnIndexToLabel,

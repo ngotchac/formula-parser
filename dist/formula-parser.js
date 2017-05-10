@@ -414,18 +414,6 @@ exports.arrayEach = function(array, iteratee) {
   return array;
 };
 
-exports.transpose = function(matrix) {
-  if(!matrix) { 
-    return error.value;
-  }
-
-  return matrix[0].map(function(col, i) { 
-    return matrix.map(function(row) { 
-      return row[i];
-    });
-  });
-};
-
 
 /***/ }),
 /* 3 */
@@ -5205,205 +5193,12 @@ PI = new Decimal(pi);
 
 /***/ }),
 /* 4 */
-/***/ (function(module, exports) {
-
-// shim for using process in browser
-var process = module.exports = {};
-
-// cached from whatever global is present so that test runners that stub it
-// don't break things.  But we need to wrap it in a try catch in case it is
-// wrapped in strict mode code which doesn't define any globals.  It's inside a
-// function because try/catches deoptimize in certain engines.
-
-var cachedSetTimeout;
-var cachedClearTimeout;
-
-function defaultSetTimout() {
-    throw new Error('setTimeout has not been defined');
-}
-function defaultClearTimeout () {
-    throw new Error('clearTimeout has not been defined');
-}
-(function () {
-    try {
-        if (typeof setTimeout === 'function') {
-            cachedSetTimeout = setTimeout;
-        } else {
-            cachedSetTimeout = defaultSetTimout;
-        }
-    } catch (e) {
-        cachedSetTimeout = defaultSetTimout;
-    }
-    try {
-        if (typeof clearTimeout === 'function') {
-            cachedClearTimeout = clearTimeout;
-        } else {
-            cachedClearTimeout = defaultClearTimeout;
-        }
-    } catch (e) {
-        cachedClearTimeout = defaultClearTimeout;
-    }
-} ())
-function runTimeout(fun) {
-    if (cachedSetTimeout === setTimeout) {
-        //normal enviroments in sane situations
-        return setTimeout(fun, 0);
-    }
-    // if setTimeout wasn't available but was latter defined
-    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
-        cachedSetTimeout = setTimeout;
-        return setTimeout(fun, 0);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedSetTimeout(fun, 0);
-    } catch(e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
-            return cachedSetTimeout.call(null, fun, 0);
-        } catch(e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
-            return cachedSetTimeout.call(this, fun, 0);
-        }
-    }
-
-
-}
-function runClearTimeout(marker) {
-    if (cachedClearTimeout === clearTimeout) {
-        //normal enviroments in sane situations
-        return clearTimeout(marker);
-    }
-    // if clearTimeout wasn't available but was latter defined
-    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
-        cachedClearTimeout = clearTimeout;
-        return clearTimeout(marker);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedClearTimeout(marker);
-    } catch (e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
-            return cachedClearTimeout.call(null, marker);
-        } catch (e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
-            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
-            return cachedClearTimeout.call(this, marker);
-        }
-    }
-
-
-
-}
-var queue = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
-
-function cleanUpNextTick() {
-    if (!draining || !currentQueue) {
-        return;
-    }
-    draining = false;
-    if (currentQueue.length) {
-        queue = currentQueue.concat(queue);
-    } else {
-        queueIndex = -1;
-    }
-    if (queue.length) {
-        drainQueue();
-    }
-}
-
-function drainQueue() {
-    if (draining) {
-        return;
-    }
-    var timeout = runTimeout(cleanUpNextTick);
-    draining = true;
-
-    var len = queue.length;
-    while(len) {
-        currentQueue = queue;
-        queue = [];
-        while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
-        }
-        queueIndex = -1;
-        len = queue.length;
-    }
-    currentQueue = null;
-    draining = false;
-    runClearTimeout(timeout);
-}
-
-process.nextTick = function (fun) {
-    var args = new Array(arguments.length - 1);
-    if (arguments.length > 1) {
-        for (var i = 1; i < arguments.length; i++) {
-            args[i - 1] = arguments[i];
-        }
-    }
-    queue.push(new Item(fun, args));
-    if (queue.length === 1 && !draining) {
-        runTimeout(drainQueue);
-    }
-};
-
-// v8 likes predictible objects
-function Item(fun, array) {
-    this.fun = fun;
-    this.array = array;
-}
-Item.prototype.run = function () {
-    this.fun.apply(null, this.array);
-};
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-process.versions = {};
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-process.prependListener = noop;
-process.prependOnceListener = noop;
-
-process.listeners = function (name) { return [] }
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-};
-
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function() { return 0; };
-
-
-/***/ }),
-/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var utils = __webpack_require__(2);
 var error = __webpack_require__(0);
-var statistical = __webpack_require__(6);
-var information = __webpack_require__(9);
-var Decimal = __webpack_require__(3);
-
-Decimal.set({ precision: 15 });
+var statistical = __webpack_require__(5);
+var information = __webpack_require__(8);
 
 exports.ABS = function(number) {
   number = utils.parseNumber(number);
@@ -5998,7 +5793,7 @@ exports.PRODUCT = function() {
   }
   var result = 1;
   for (var i = 0; i < args.length; i++) {
-    result = (new Decimal(result)).times(args[i]).toNumber();
+    result *= args[i];
   }
   return result;
 };
@@ -6360,13 +6155,15 @@ exports.POW = function (base, exponent) {
 
 exports.SUM = function() {
   var result = 0;
+
   utils.arrayEach(utils.argsToArray(arguments), function(value) {
     if (typeof value === 'number') {
-      result = (new Decimal(result)).plus(new Decimal(value)).toNumber();
+      result += value;
+
     } else if (typeof value === 'string') {
       var parsed = parseFloat(value);
 
-      !isNaN(parsed) && (result = (new Decimal(result)).plus(new Decimal(value)).toNumber());
+      !isNaN(parsed) && (result += parsed);
 
     } else if (Array.isArray(value)) {
       result += exports.SUM.apply(null, value);
@@ -6540,15 +6337,15 @@ exports.TRUNC = function(number, digits) {
 
 
 /***/ }),
-/* 6 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var mathTrig = __webpack_require__(5);
-var text = __webpack_require__(10);
-var jStat = __webpack_require__(15).jStat;
+var mathTrig = __webpack_require__(4);
+var text = __webpack_require__(9);
+var jStat = __webpack_require__(16).jStat;
 var utils = __webpack_require__(2);
 var error = __webpack_require__(0);
-var misc = __webpack_require__(14);
+var misc = __webpack_require__(15);
 
 var SQRT2PI = 2.5066282746310002;
 
@@ -8310,7 +8107,7 @@ exports.VARPA = function() {
       count++;
     }
   }
-  result = sigma / count;
+  result = sigma / count;;
 
   if (isNaN(result)) {
     result = error.num;
@@ -8347,7 +8144,7 @@ exports.Z.TEST = function(range, x, sd) {
 
 
 /***/ }),
-/* 7 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8385,7 +8182,7 @@ function invertNumber(number) {
 }
 
 /***/ }),
-/* 8 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var error = __webpack_require__(0);
@@ -8944,10 +8741,10 @@ function serial(date) {
 
 
 /***/ }),
-/* 9 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(process) {var error = __webpack_require__(0);
+var error = __webpack_require__(0);
 
 // TODO
 exports.CELL = function() {
@@ -9049,10 +8846,6 @@ exports.N = function(value) {
 };
 
 exports.NA = function() {
-  if (process && process.env && "development" === 'compile') {
-    return 0;
-  }
-  
   return error.na;
 };
 
@@ -9085,15 +8878,14 @@ exports.TYPE = function(value) {
   }
 };
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ }),
-/* 10 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var utils = __webpack_require__(2);
 var error = __webpack_require__(0);
-var numbro = __webpack_require__(16);
+var numbro = __webpack_require__(17);
 
 //TODO
 exports.ASC = function() {
@@ -9429,7 +9221,307 @@ exports.VALUE = function(text) {
 
 
 /***/ }),
+/* 10 */
+/***/ (function(module, exports) {
+
+// shim for using process in browser
+var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+
+/***/ }),
 /* 11 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+exports.__esModule = true;
+exports['default'] = evaluate;
+
+var _evaluateByOperator = __webpack_require__(19);
+
+var _evaluateByOperator2 = _interopRequireDefault(_evaluateByOperator);
+
+var _error = __webpack_require__(1);
+
+var _error2 = _interopRequireDefault(_error);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _evaluate(object, options) {
+  if (object && typeof object === 'object' && object.func) {
+    var func = object.func,
+        _object$args = object.args,
+        args = _object$args === undefined ? [] : _object$args,
+        value = object.value;
+
+    var evalArgs = _evaluate(args, options);
+
+    if (func === '_evaluateByOperator') {
+      value = _evaluateByOperator2['default'].apply(undefined, evalArgs);
+
+      if (value === undefined) {
+        return true;
+      }
+
+      return value;
+    }
+
+    if (func === '_callVariable') {
+      if (options.getVariable) {
+        var nextValue = options.getVariable.apply(options, evalArgs);
+
+        if (nextValue !== void 0) {
+          value = nextValue;
+        }
+      }
+
+      if (value === void 0) {
+        throw Error(_error.ERROR_NAME);
+      }
+
+      return value;
+    }
+
+    if (func === '_callCellValue') {
+      if (!options.getCellValue) {
+        return value;
+      }
+
+      return options.getCellValue.apply(options, evalArgs);
+    }
+
+    if (func === '_callRangeValue') {
+      if (!options.getRangeValue) {
+        return value;
+      }
+
+      return options.getRangeValue.apply(options, evalArgs);
+    }
+
+    return value;
+  }
+
+  if (Array.isArray(object)) {
+    return object.map(function (o) {
+      return _evaluate(o, options);
+    });
+  }
+
+  return object;
+}
+
+function evaluate(parsed, options) {
+  var result = null;
+  var error = null;
+
+  try {
+    result = _evaluate(parsed, options);
+  } catch (ex) {
+    var message = (0, _error2['default'])(ex.message);
+
+    if (message) {
+      error = message;
+    } else {
+      error = (0, _error2['default'])(_error.ERROR);
+    }
+  }
+
+  if (result instanceof Error) {
+    error = (0, _error2['default'])(result.message) || (0, _error2['default'])(_error.ERROR);
+    result = null;
+  }
+
+  return {
+    result: result,
+    error: error
+  };
+}
+
+/***/ }),
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9562,7 +9654,7 @@ function toLabel(row, column) {
 }
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9574,12 +9666,12 @@ var SUPPORTED_FORMULAS = ['ABS', 'ACCRINT', 'ACOS', 'ACOSH', 'ACOT', 'ACOTH', 'A
 exports['default'] = SUPPORTED_FORMULAS;
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var error = __webpack_require__(0);
-var jStat = __webpack_require__(15).jStat;
-var text = __webpack_require__(10);
+var jStat = __webpack_require__(16).jStat;
+var text = __webpack_require__(9);
 var utils = __webpack_require__(2);
 var bessel = __webpack_require__(35);
 
@@ -11142,11 +11234,11 @@ exports.OCT2HEX = function(number, places) {
 
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var utils = __webpack_require__(2);
-var numbro = __webpack_require__(16);
+var numbro = __webpack_require__(17);
 var error = __webpack_require__(0);
 
 exports.UNIQUE = function () {
@@ -11213,7 +11305,7 @@ exports.NUMERAL = function (number, format) {
 
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports) {
 
 this.j$ = this.jStat = (function(Math, undefined) {
@@ -15374,7 +15466,7 @@ this.jStat.models=(function(){
 
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(process) {var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -16672,10 +16764,10 @@ this.jStat.models=(function(){
 
 }.call(typeof window === 'undefined' ? this : window));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10)))
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16691,15 +16783,15 @@ var _grammarParser = __webpack_require__(107);
 
 var _string = __webpack_require__(33);
 
-var _number = __webpack_require__(7);
+var _number = __webpack_require__(6);
 
 var _error = __webpack_require__(1);
 
 var _error2 = _interopRequireDefault(_error);
 
-var _cell = __webpack_require__(11);
+var _cell = __webpack_require__(12);
 
-var _evaluate2 = __webpack_require__(32);
+var _evaluate2 = __webpack_require__(11);
 
 var _evaluate3 = _interopRequireDefault(_evaluate2);
 
@@ -16803,7 +16895,6 @@ var Parser = function (_Emitter) {
         evaluate = _options$evaluate === undefined ? true : _options$evaluate;
 
 
-    var result = null;
     var parsed = null;
     var error = null;
 
@@ -16831,30 +16922,14 @@ var Parser = function (_Emitter) {
       };
     }
 
-    if (!error) {
-      try {
-        result = this.evaluate(parsed);
-      } catch (ex) {
-        // console.error(ex)
-        var _message = (0, _error2['default'])(ex.message);
-
-        if (_message) {
-          error = _message;
-        } else {
-          error = (0, _error2['default'])(_error.ERROR);
-        }
-      }
+    if (error) {
+      return {
+        result: null,
+        error: error
+      };
     }
 
-    if (result instanceof Error) {
-      error = (0, _error2['default'])(result.message) || (0, _error2['default'])(_error.ERROR);
-      result = null;
-    }
-
-    return {
-      result: result,
-      error: error
-    };
+    return this.evaluate(parsed);
   };
 
   /**
@@ -17032,7 +17107,7 @@ var Parser = function (_Emitter) {
 exports['default'] = Parser;
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17042,55 +17117,55 @@ exports.__esModule = true;
 exports['default'] = evaluateByOperator;
 exports.registerOperation = registerOperation;
 
-var _add = __webpack_require__(19);
+var _add = __webpack_require__(20);
 
 var _add2 = _interopRequireDefault(_add);
 
-var _ampersand = __webpack_require__(20);
+var _ampersand = __webpack_require__(21);
 
 var _ampersand2 = _interopRequireDefault(_ampersand);
 
-var _divide = __webpack_require__(21);
+var _divide = __webpack_require__(22);
 
 var _divide2 = _interopRequireDefault(_divide);
 
-var _equal = __webpack_require__(22);
+var _equal = __webpack_require__(23);
 
 var _equal2 = _interopRequireDefault(_equal);
 
-var _formulaFunction = __webpack_require__(23);
+var _formulaFunction = __webpack_require__(24);
 
 var _formulaFunction2 = _interopRequireDefault(_formulaFunction);
 
-var _greaterThan = __webpack_require__(25);
+var _greaterThan = __webpack_require__(26);
 
 var _greaterThan2 = _interopRequireDefault(_greaterThan);
 
-var _greaterThanOrEqual = __webpack_require__(24);
+var _greaterThanOrEqual = __webpack_require__(25);
 
 var _greaterThanOrEqual2 = _interopRequireDefault(_greaterThanOrEqual);
 
-var _lessThan = __webpack_require__(27);
+var _lessThan = __webpack_require__(28);
 
 var _lessThan2 = _interopRequireDefault(_lessThan);
 
-var _lessThanOrEqual = __webpack_require__(26);
+var _lessThanOrEqual = __webpack_require__(27);
 
 var _lessThanOrEqual2 = _interopRequireDefault(_lessThanOrEqual);
 
-var _minus = __webpack_require__(28);
+var _minus = __webpack_require__(29);
 
 var _minus2 = _interopRequireDefault(_minus);
 
-var _multiply = __webpack_require__(29);
+var _multiply = __webpack_require__(30);
 
 var _multiply2 = _interopRequireDefault(_multiply);
 
-var _notEqual = __webpack_require__(30);
+var _notEqual = __webpack_require__(31);
 
 var _notEqual2 = _interopRequireDefault(_notEqual);
 
-var _power = __webpack_require__(31);
+var _power = __webpack_require__(32);
 
 var _power2 = _interopRequireDefault(_power);
 
@@ -17154,7 +17229,7 @@ registerOperation(_notEqual2['default'].SYMBOL, _notEqual2['default']);
 registerOperation(_minus2['default'].SYMBOL, _minus2['default']);
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17197,7 +17272,7 @@ function func(first) {
 func.SYMBOL = SYMBOL;
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17220,7 +17295,7 @@ function func() {
 func.SYMBOL = SYMBOL;
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17234,7 +17309,7 @@ var _decimal = __webpack_require__(3);
 
 var _decimal2 = _interopRequireDefault(_decimal);
 
-var _number = __webpack_require__(7);
+var _number = __webpack_require__(6);
 
 var _error = __webpack_require__(1);
 
@@ -17274,7 +17349,7 @@ function func(first) {
 func.SYMBOL = SYMBOL;
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17295,7 +17370,7 @@ function func(exp1, exp2) {
 func.SYMBOL = SYMBOL;
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17309,7 +17384,7 @@ var _formulajs = __webpack_require__(36);
 
 var formulajs = _interopRequireWildcard(_formulajs);
 
-var _supportedFormulas = __webpack_require__(12);
+var _supportedFormulas = __webpack_require__(13);
 
 var _supportedFormulas2 = _interopRequireDefault(_supportedFormulas);
 
@@ -17366,7 +17441,7 @@ func.isFactory = true;
 func.SYMBOL = SYMBOL;
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17383,7 +17458,7 @@ function func(exp1, exp2) {
 func.SYMBOL = SYMBOL;
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17400,7 +17475,7 @@ function func(exp1, exp2) {
 func.SYMBOL = SYMBOL;
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17417,7 +17492,7 @@ function func(exp1, exp2) {
 func.SYMBOL = SYMBOL;
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17434,7 +17509,7 @@ function func(exp1, exp2) {
 func.SYMBOL = SYMBOL;
 
 /***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17477,7 +17552,7 @@ function func(first) {
 func.SYMBOL = SYMBOL;
 
 /***/ }),
-/* 29 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17520,7 +17595,7 @@ function func(first) {
 func.SYMBOL = SYMBOL;
 
 /***/ }),
-/* 30 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17537,7 +17612,7 @@ function func(exp1, exp2) {
 func.SYMBOL = SYMBOL;
 
 /***/ }),
-/* 31 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17551,7 +17626,7 @@ var _decimal = __webpack_require__(3);
 
 var _decimal2 = _interopRequireDefault(_decimal);
 
-var _number = __webpack_require__(7);
+var _number = __webpack_require__(6);
 
 var _error = __webpack_require__(1);
 
@@ -17573,87 +17648,6 @@ function func(exp1, exp2) {
 }
 
 func.SYMBOL = SYMBOL;
-
-/***/ }),
-/* 32 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-exports.__esModule = true;
-exports['default'] = evaluate;
-
-var _evaluateByOperator = __webpack_require__(18);
-
-var _evaluateByOperator2 = _interopRequireDefault(_evaluateByOperator);
-
-var _error = __webpack_require__(1);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-function evaluate(object, options) {
-  if (typeof object === 'object' && object.func) {
-    var func = object.func,
-        _object$args = object.args,
-        args = _object$args === undefined ? [] : _object$args,
-        value = object.value;
-
-    var evalArgs = evaluate(args, options);
-
-    if (func === '_evaluateByOperator') {
-      value = _evaluateByOperator2['default'].apply(undefined, evalArgs);
-
-      if (value === undefined) {
-        return true;
-      }
-
-      return value;
-    }
-
-    if (func === '_callVariable') {
-      if (options.getVariable) {
-        var nextValue = options.getVariable.apply(options, evalArgs);
-
-        if (nextValue !== void 0) {
-          value = nextValue;
-        }
-      }
-
-      if (value === void 0) {
-        throw Error(_error.ERROR_NAME);
-      }
-
-      return value;
-    }
-
-    if (func === '_callCellValue') {
-      if (!options.getCellValue) {
-        return value;
-      }
-
-      return options.getCellValue.apply(options, evalArgs);
-    }
-
-    if (func === '_callRangeValue') {
-      if (!options.getRangeValue) {
-        return value;
-      }
-
-      return options.getRangeValue.apply(options, evalArgs);
-    }
-
-    return value;
-  }
-
-  if (Array.isArray(object)) {
-    return object.map(function (o) {
-      return evaluate(o, options);
-    });
-  }
-
-  return object;
-}
 
 /***/ }),
 /* 33 */
@@ -17688,13 +17682,17 @@ function trimEdges(string) {
 
 
 exports.__esModule = true;
-exports.rowLabelToIndex = exports.rowIndexToLabel = exports.columnLabelToIndex = exports.columnIndexToLabel = exports.toLabel = exports.extractLabel = exports.error = exports.Parser = exports.ERROR_VALUE = exports.ERROR_REF = exports.ERROR_NUM = exports.ERROR_NULL = exports.ERROR_NOT_AVAILABLE = exports.ERROR_NAME = exports.ERROR_DIV_ZERO = exports.ERROR = exports.SUPPORTED_FORMULAS = undefined;
+exports.rowLabelToIndex = exports.rowIndexToLabel = exports.columnLabelToIndex = exports.columnIndexToLabel = exports.toLabel = exports.extractLabel = exports.evaluate = exports.error = exports.Parser = exports.ERROR_VALUE = exports.ERROR_REF = exports.ERROR_NUM = exports.ERROR_NULL = exports.ERROR_NOT_AVAILABLE = exports.ERROR_NAME = exports.ERROR_DIV_ZERO = exports.ERROR = exports.SUPPORTED_FORMULAS = undefined;
 
-var _parser = __webpack_require__(17);
+var _evaluate = __webpack_require__(11);
+
+var _evaluate2 = _interopRequireDefault(_evaluate);
+
+var _parser = __webpack_require__(18);
 
 var _parser2 = _interopRequireDefault(_parser);
 
-var _supportedFormulas = __webpack_require__(12);
+var _supportedFormulas = __webpack_require__(13);
 
 var _supportedFormulas2 = _interopRequireDefault(_supportedFormulas);
 
@@ -17702,7 +17700,7 @@ var _error = __webpack_require__(1);
 
 var _error2 = _interopRequireDefault(_error);
 
-var _cell = __webpack_require__(11);
+var _cell = __webpack_require__(12);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -17717,6 +17715,7 @@ exports.ERROR_REF = _error.ERROR_REF;
 exports.ERROR_VALUE = _error.ERROR_VALUE;
 exports.Parser = _parser2['default'];
 exports.error = _error2['default'];
+exports.evaluate = _evaluate2['default'];
 exports.extractLabel = _cell.extractLabel;
 exports.toLabel = _cell.toLabel;
 exports.columnIndexToLabel = _cell.columnIndexToLabel;
@@ -17946,16 +17945,16 @@ if(true) {
 var categories = [
   __webpack_require__(37),
   __webpack_require__(38),
-  __webpack_require__(13),
+  __webpack_require__(14),
   __webpack_require__(40),
-  __webpack_require__(5),
-  __webpack_require__(10),
-  __webpack_require__(8),
-  __webpack_require__(39),
+  __webpack_require__(4),
   __webpack_require__(9),
+  __webpack_require__(7),
+  __webpack_require__(39),
+  __webpack_require__(8),
   __webpack_require__(41),
-  __webpack_require__(6),
-  __webpack_require__(14)
+  __webpack_require__(5),
+  __webpack_require__(15)
 ];
 
 for (var c in categories) {
@@ -17970,10 +17969,10 @@ for (var c in categories) {
 /* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var mathTrig = __webpack_require__(5);
-var statistical = __webpack_require__(6);
-var engineering = __webpack_require__(13);
-var dateTime = __webpack_require__(8);
+var mathTrig = __webpack_require__(4);
+var statistical = __webpack_require__(5);
+var engineering = __webpack_require__(14);
+var dateTime = __webpack_require__(7);
 
 function set(fn, root) {
   if (root) {
@@ -18064,8 +18063,8 @@ exports.ZTEST = statistical.Z.TEST;
 /***/ (function(module, exports, __webpack_require__) {
 
 var error = __webpack_require__(0);
-var stats = __webpack_require__(6);
-var maths = __webpack_require__(5);
+var stats = __webpack_require__(5);
+var maths = __webpack_require__(4);
 var utils = __webpack_require__(2);
 
 function compact(array) {
@@ -18457,7 +18456,7 @@ exports.DVARP = function(database, field, criteria) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var error = __webpack_require__(0);
-var dateTime = __webpack_require__(8);
+var dateTime = __webpack_require__(7);
 var utils = __webpack_require__(2);
 
 function validDate(d) {
@@ -18479,7 +18478,7 @@ exports.ACCRINT = function(issue, first, settlement, rate, par, frequency, basis
 
   // Return error if either rate or par are lower than or equal to zero
   if (rate <= 0 || par <= 0) {
-    return error.num;
+    return error.num
   }
 
   // Return error if frequency is neither 1, 2, or 4
@@ -19554,7 +19553,7 @@ exports.YIELDMAT = function() {
 
 var error = __webpack_require__(0);
 var utils = __webpack_require__(2);
-var information = __webpack_require__(9);
+var information = __webpack_require__(8);
 
 exports.AND = function() {
   var args = utils.flatten(arguments);
@@ -19669,8 +19668,7 @@ exports.SWITCH = function () {
 /* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(process) {var error = __webpack_require__(0);
-var utils = __webpack_require__(2);
+var error = __webpack_require__(0);
 
 exports.MATCH = function(lookupValue, lookupArray, matchType) {
   if (!lookupValue && !lookupArray) {
@@ -19730,82 +19728,6 @@ exports.MATCH = function(lookupValue, lookupArray, matchType) {
 
   return index ? index : error.na;
 };
-
-function isEqual(exp1, exp2) {
-  if ((typeof exp1 === 'string') && (typeof exp2 === 'string')) {
-    return exp1.toUpperCase() === exp2.toUpperCase();
-  } else {
-    return exp1 === exp2;
-  }
-}
-
-exports.VLOOKUP = function (needle, table, index, rangeLookup) {
-  if (process && process.env && "development" === 'compile') {
-    return 0;
-  }
-
-  if (!needle || !table || !index) {
-    return error.na;
-  }
-
-  rangeLookup = rangeLookup || false;
-  for (var i = 0; i < table.length; i++) {
-    var row = table[i];
-    if (!rangeLookup) {
-      if (isEqual(row[0],needle)) {
-        return (index < (row.length + 1) ? row[index - 1] : error.ref);
-      }
-    } else {
-      if (!isNaN(needle)) {
-        needle = utils.parseNumber(needle);
-        var startRange = utils.parseNumber(row[0]);
-        var isLastIndex = i === (table.length - 1) ? true : false;
-        if (isLastIndex) {
-          return (index < (row.length + 1) ? row[index - 1] : error.ref);
-        } else {
-          var endRange = utils.parseNumber(table[i + 1][0]) - 1;
-          if(needle < startRange) {
-            return error.na;
-          } else if (needle >= startRange && needle <= endRange) {
-            return (index < (row.length + 1) ? row[index - 1] : error.ref);
-          }
-        }
-      } else {
-        if (row[0].toLowerCase().indexOf(needle.toLowerCase()) !== -1) {
-          return (index < (row.length + 1) ? row[index - 1] : error.ref);
-        }
-      }
-    }
-  }
-  return error.na;
-};
-
-exports.HLOOKUP = function (needle, table, index, rangeLookup) {
-  if (process && process.env && "development" === 'compile') {
-    return 0;
-  }
-
-  if (!needle || !table || !index) {
-    return error.na;
-  }
-
-  rangeLookup = rangeLookup || false;
-
-  var transposedTable = utils.transpose(table);
-
-  for (var i = 0; i < transposedTable.length; i++) {
-    var row = transposedTable[i];
-    if ((!rangeLookup && row[0] === needle) ||
-      ((isEqual(row[0], needle)) ||
-        (rangeLookup && typeof row[0] === "string" && row[0].toLowerCase().indexOf(needle.toLowerCase()) !== -1))) {
-      return (index < (row.length + 1) ? row[index - 1] : error.ref);
-    }
-  }
-
-  return error.na;
-};
-
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ }),
 /* 42 */
@@ -23346,7 +23268,7 @@ var substr = 'ab'.substr(-1) === 'b'
     }
 ;
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10)))
 
 /***/ }),
 /* 105 */
@@ -24451,7 +24373,7 @@ if (typeof module !== 'undefined' && __webpack_require__.c[__webpack_require__.s
   exports.main(process.argv.slice(1));
 }
 }
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4), __webpack_require__(106)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10), __webpack_require__(106)(module)))
 
 /***/ })
 /******/ ]);

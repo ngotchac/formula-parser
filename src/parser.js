@@ -76,7 +76,6 @@ class Parser extends Emitter {
   parse(expression, options = {}) {
     const { evaluate = true } = options;
 
-    let result = null;
     let parsed = null;
     let error = null;
 
@@ -104,30 +103,14 @@ class Parser extends Emitter {
       };
     }
 
-    if (!error) {
-      try {
-        result = this.evaluate(parsed);
-      } catch (ex) {
-        // console.error(ex)
-        const message = errorParser(ex.message);
-
-        if (message) {
-          error = message;
-        } else {
-          error = errorParser(ERROR);
-        }
-      }
+    if (error) {
+      return {
+        result: null,
+        error,
+      };
     }
 
-    if (result instanceof Error) {
-      error = errorParser(result.message) || errorParser(ERROR);
-      result = null;
-    }
-
-    return {
-      result,
-      error,
-    };
+    return this.evaluate(parsed);
   }
 
   /**

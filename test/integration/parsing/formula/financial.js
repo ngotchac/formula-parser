@@ -28,7 +28,7 @@ describe('.parse() financial formulas', () => {
     expect(parser.parse('CUMIPMT(0.1/12, 30*12, 100000)')).toMatchObject({error: '#NUM!', result: null});
     expect(parser.parse('CUMIPMT(0.1/12, 30*12, 100000, 13)')).toMatchObject({error: '#NUM!', result: null});
     expect(parser.parse('CUMIPMT(0.1/12, 30*12, 100000, 13, 24)')).toMatchObject({error: '#NUM!', result: null});
-    expect(parser.parse('CUMIPMT(0.1/12, 30*12, 100000, 13, 24, 0)')).toMatchObject({error: null, result: -9916.772513957076});
+    expect(parser.parse('CUMIPMT(0.1/12, 30*12, 100000, 13, 24, 0)')).toMatchObject({error: null, result: -9916.77251395708});
   });
 
   it('CUMPRINC', () => {
@@ -38,7 +38,7 @@ describe('.parse() financial formulas', () => {
     expect(parser.parse('CUMPRINC(0.1/12, 30*12, 100000)')).toMatchObject({error: '#NUM!', result: null});
     expect(parser.parse('CUMPRINC(0.1/12, 30*12, 100000, 13)')).toMatchObject({error: '#NUM!', result: null});
     expect(parser.parse('CUMPRINC(0.1/12, 30*12, 100000, 13, 24)')).toMatchObject({error: '#NUM!', result: null});
-    expect(parser.parse('CUMPRINC(0.1/12, 30*12, 100000, 13, 24, 0)')).toMatchObject({error: null, result: -614.086327108515,});
+    expect(parser.parse('CUMPRINC(0.1/12, 30*12, 100000, 13, 24, 0)')).toMatchObject({error: null, result: -614.0863271085149});
   });
 
   it('DB', () => {
