@@ -1,10 +1,10 @@
 import Emitter from 'tiny-emitter';
-import evaluateByOperator from './evaluate-by-operator/evaluate-by-operator';
 import {Parser as GrammarParser} from './grammar-parser/grammar-parser';
 import {trimEdges} from './helper/string';
 import {toNumber, invertNumber} from './helper/number';
-import errorParser, {isValidStrict as isErrorValid, ERROR, ERROR_NAME} from './error';
+import errorParser, {isValidStrict as isErrorValid, ERROR} from './error';
 import {extractLabel, toLabel} from './helper/cell';
+import evaluate from './evaluate';
 
 /**
  * @class Parser
@@ -18,11 +18,11 @@ class Parser extends Emitter {
       trimEdges,
       invertNumber,
       throwError: (errorName) => this._throwError(errorName),
-      callVariable: (variable) => this._callVariable(variable),
-      evaluateByOperator,
-      callFunction: evaluateByOperator,
-      cellValue: (value, sheet) => this._callCellValue(value, sheet),
-      rangeValue: (start, end, sheet) => this._callRangeValue(start, end, sheet),
+      callVariable: (variable) => this.callVariable(variable),
+      evaluateByOperator: (...args) => this.evaluateByOperator(...args),
+      callFunction: (...args) => this.evaluateByOperator(...args),
+      cellValue: (value, sheet) => this.callCellValue(value, sheet),
+      rangeValue: (start, end, sheet) => this.callRangeValue(start, end, sheet),
     };
     this.variables = Object.create(null);
 
@@ -32,6 +32,41 @@ class Parser extends Emitter {
       .setVariable('NULL', null);
   }
 
+  evaluate(object) {
+    const options = {
+      getVariable: (name) => {
+        let value;
+
+        this.emit('callVariable', name, (newValue) => {
+          value = newValue;
+        });
+
+        return value;
+      },
+
+      getRangeValue: (startCell, endCell) => {
+        let value = [];
+
+        this.emit('callRangeValue', startCell, endCell, (_value) => {
+          value = _value;
+        });
+
+        return value;
+      },
+
+      getCellValue: (cellCoordinate) => {
+        let value = void 0;
+
+        this.emit('callCellValue', cellCoordinate, (_value) => {
+          value = _value;
+        });
+
+        return value;
+      },
+    };
+
+    return evaluate(object, options);
+  }
   /**
    * Parse formula expression.
    *
@@ -40,15 +75,19 @@ class Parser extends Emitter {
    */
   parse(expression) {
     let result = null;
+    let parsed = null;
     let error = null;
 
     try {
       if (expression === '') {
-        result = '';
+        parsed = '';
       } else {
-        result = this.parser.parse(expression);
+        parsed = this.parser.parse(expression);
       }
+
+      result = this.evaluate(parsed);
     } catch (ex) {
+      // console.error(ex)
       const message = errorParser(ex.message);
 
       if (message) {
@@ -64,8 +103,8 @@ class Parser extends Emitter {
     }
 
     return {
-      error,
       result,
+      error,
     };
   }
 
@@ -92,6 +131,25 @@ class Parser extends Emitter {
     return this.variables[name];
   }
 
+  _callVariable(name) {
+    return this.evaluate(this.callVariable(name));
+  }
+
+  _callCellValue(label, sheet) {
+    return this.evaluate(this.callCellValue(label, sheet));
+  }
+
+  _callRangeValue(startLabel, endLabel, sheet) {
+    return this.evaluate(this.callRangeValue(startLabel, endLabel, sheet));
+  }
+
+  evaluateByOperator(...args) {
+    return {
+      func: '_evaluateByOperator',
+      args,
+    };
+  }
+
   /**
    * Retrieve variable value by its name.
    *
@@ -99,20 +157,14 @@ class Parser extends Emitter {
    * @returns {*}
    * @private
    */
-  _callVariable(name) {
+  callVariable(name) {
     let value = this.getVariable(name);
 
-    this.emit('callVariable', name, (newValue) => {
-      if (newValue !== void 0) {
-        value = newValue;
-      }
-    });
-
-    if (value === void 0) {
-      throw Error(ERROR_NAME);
-    }
-
-    return value;
+    return {
+      func: '_callVariable',
+      args: [name],
+      value,
+    };
   }
 
   /**
@@ -123,18 +175,19 @@ class Parser extends Emitter {
    * @returns {*}
    * @private
    */
-  _callCellValue(label, sheet) {
+  callCellValue(label, sheet) {
     label = label.toUpperCase();
     const [row, column] = extractLabel(label);
-    let value = void 0;
 
-    let cellCoordinate = sheet ? {label, row, column, sheet} : {label, row, column};
+    let cellCoordinate = sheet
+      ? {label, row, column, sheet}
+      : {label, row, column};
 
-    this.emit('callCellValue', cellCoordinate, (_value) => {
-      value = _value;
-    });
-
-    return value;
+    return {
+      func: '_callCellValue',
+      args: [cellCoordinate],
+      value: void 0,
+    };
   }
 
   /**
@@ -146,7 +199,7 @@ class Parser extends Emitter {
    * @returns {Array} Returns an array of mixed values.
    * @private
    */
-  _callRangeValue(startLabel, endLabel, sheet) {
+  callRangeValue(startLabel, endLabel, sheet) {
     startLabel = startLabel.toUpperCase();
     endLabel = endLabel.toUpperCase();
 
@@ -179,13 +232,11 @@ class Parser extends Emitter {
       endCell.sheet = sheet;
     }
 
-    let value = [];
-
-    this.emit('callRangeValue', startCell, endCell, (_value = []) => {
-      value = _value;
-    });
-
-    return value;
+    return {
+      func: '_callRangeValue',
+      args: [startCell, endCell],
+      value: [],
+    };
   }
 
   /**

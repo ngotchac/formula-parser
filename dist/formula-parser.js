@@ -399,7 +399,7 @@ var errors = (_errors = {}, _errors[ERROR] = '#ERROR!', _errors[ERROR_DIV_ZERO] 
 function error(type) {
   var result = void 0;
 
-  type = (type + '').replace(/#|!|\?/g, '');
+  type = ('' + type).replace(/#|!|\?/g, '');
 
   if (errors[type]) {
     result = errors[type];
@@ -5205,44 +5205,6 @@ PI = new Decimal(pi);
 
 /***/ }),
 /* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-exports.__esModule = true;
-exports.toNumber = toNumber;
-exports.invertNumber = invertNumber;
-/**
- * Convert value into number.
- *
- * @param {String|Number} number
- * @returns {*}
- */
-function toNumber(number) {
-  var result = void 0;
-
-  if (typeof number === 'number') {
-    result = number;
-  } else if (typeof number === 'string') {
-    result = number.indexOf('.') > -1 ? parseFloat(number) : parseInt(number, 10);
-  }
-
-  return result;
-}
-
-/**
- * Invert provided number.
- *
- * @param {Number} number
- * @returns {Number} Returns inverted number.
- */
-function invertNumber(number) {
-  return -1 * toNumber(number);
-}
-
-/***/ }),
-/* 5 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -5432,12 +5394,12 @@ process.umask = function() { return 0; };
 
 
 /***/ }),
-/* 6 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var utils = __webpack_require__(1);
 var error = __webpack_require__(0);
-var statistical = __webpack_require__(7);
+var statistical = __webpack_require__(6);
 var information = __webpack_require__(9);
 var Decimal = __webpack_require__(3);
 
@@ -6578,10 +6540,10 @@ exports.TRUNC = function(number, digits) {
 
 
 /***/ }),
-/* 7 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var mathTrig = __webpack_require__(6);
+var mathTrig = __webpack_require__(5);
 var text = __webpack_require__(10);
 var jStat = __webpack_require__(15).jStat;
 var utils = __webpack_require__(1);
@@ -8385,6 +8347,44 @@ exports.Z.TEST = function(range, x, sd) {
 
 
 /***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+exports.__esModule = true;
+exports.toNumber = toNumber;
+exports.invertNumber = invertNumber;
+/**
+ * Convert value into number.
+ *
+ * @param {String|Number} number
+ * @returns {*}
+ */
+function toNumber(number) {
+  var result = void 0;
+
+  if (typeof number === 'number') {
+    result = number;
+  } else if (typeof number === 'string') {
+    result = number.indexOf('.') > -1 ? parseFloat(number) : parseInt(number, 10);
+  }
+
+  return result;
+}
+
+/**
+ * Invert provided number.
+ *
+ * @param {Number} number
+ * @returns {Number} Returns inverted number.
+ */
+function invertNumber(number) {
+  return -1 * toNumber(number);
+}
+
+/***/ }),
 /* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -9085,7 +9085,7 @@ exports.TYPE = function(value) {
   }
 };
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ }),
 /* 10 */
@@ -16672,7 +16672,7 @@ this.jStat.models=(function(){
 
 }.call(typeof window === 'undefined' ? this : window));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ }),
 /* 17 */
@@ -16687,15 +16687,15 @@ var _tinyEmitter = __webpack_require__(104);
 
 var _tinyEmitter2 = _interopRequireDefault(_tinyEmitter);
 
-var _evaluateByOperator = __webpack_require__(18);
+var _evaluateByOperator2 = __webpack_require__(18);
 
-var _evaluateByOperator2 = _interopRequireDefault(_evaluateByOperator);
+var _evaluateByOperator3 = _interopRequireDefault(_evaluateByOperator2);
 
 var _grammarParser = __webpack_require__(106);
 
 var _string = __webpack_require__(32);
 
-var _number = __webpack_require__(4);
+var _number = __webpack_require__(7);
 
 var _error = __webpack_require__(2);
 
@@ -16717,10 +16717,14 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var Parser = function (_Emitter) {
   _inherits(Parser, _Emitter);
 
-  function Parser() {
+  function Parser(getCellValue, getRangeValue, getVariable) {
     _classCallCheck(this, Parser);
 
     var _this = _possibleConstructorReturn(this, _Emitter.call(this));
+
+    _this.getCellValue = getCellValue;
+    _this.getRangeValue = getRangeValue;
+    _this.getVariable = getVariable;
 
     _this.parser = new _grammarParser.Parser();
     _this.parser.yy = {
@@ -16733,8 +16737,12 @@ var Parser = function (_Emitter) {
       callVariable: function callVariable(variable) {
         return _this._callVariable(variable);
       },
-      evaluateByOperator: _evaluateByOperator2['default'],
-      callFunction: _evaluateByOperator2['default'],
+      evaluateByOperator: function evaluateByOperator() {
+        return _this._evaluateByOperator.apply(_this, arguments);
+      },
+      callFunction: function callFunction() {
+        return _this._evaluateByOperator.apply(_this, arguments);
+      },
       cellValue: function cellValue(value, sheet) {
         return _this._callCellValue(value, sheet);
       },
@@ -16748,6 +16756,19 @@ var Parser = function (_Emitter) {
     return _this;
   }
 
+  Parser.prototype._evaluateByOperator = function _evaluateByOperator() {
+    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    this.stack.push({
+      'function': _evaluateByOperator3['default'],
+      arguments: args
+    });
+
+    return this.stack.length - 1;
+  };
+
   /**
    * Parse formula expression.
    *
@@ -16757,6 +16778,8 @@ var Parser = function (_Emitter) {
 
 
   Parser.prototype.parse = function parse(expression) {
+    this.stack = [];
+
     var result = null;
     var error = null;
 
@@ -16781,9 +16804,13 @@ var Parser = function (_Emitter) {
       result = null;
     }
 
+    var stack = this.stack;
+    this.stack = [];
+
     return {
       error: error,
-      result: result
+      result: result,
+      stack: stack
     };
   };
 
@@ -16810,7 +16837,7 @@ var Parser = function (_Emitter) {
    */
 
 
-  Parser.prototype.getVariable = function getVariable(name) {
+  Parser.prototype.getVar = function getVar(name) {
     return this.variables[name];
   };
 
@@ -16824,19 +16851,15 @@ var Parser = function (_Emitter) {
 
 
   Parser.prototype._callVariable = function _callVariable(name) {
-    var value = this.getVariable(name);
+    var value = this.getVar(name);
 
-    this.emit('callVariable', name, function (newValue) {
-      if (newValue !== void 0) {
-        value = newValue;
-      }
+    this.stack.push({
+      'function': this.getVariable,
+      arguments: [name],
+      'default': value
     });
 
-    if (value === void 0) {
-      throw Error(_error.ERROR_NAME);
-    }
-
-    return value;
+    return this.stack.length - 1;
   };
 
   /**
@@ -16856,15 +16879,15 @@ var Parser = function (_Emitter) {
         row = _extractLabel[0],
         column = _extractLabel[1];
 
-    var value = void 0;
-
     var cellCoordinate = sheet ? { label: label, row: row, column: column, sheet: sheet } : { label: label, row: row, column: column };
 
-    this.emit('callCellValue', cellCoordinate, function (_value) {
-      value = _value;
+    this.stack.push({
+      'function': this.getCellValue,
+      arguments: [cellCoordinate],
+      'default': void 0
     });
 
-    return value;
+    return this.stack.length - 1;
   };
 
   /**
@@ -16917,15 +16940,13 @@ var Parser = function (_Emitter) {
       endCell.sheet = sheet;
     }
 
-    var value = [];
-
-    this.emit('callRangeValue', startCell, endCell, function () {
-      var _value = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
-
-      value = _value;
+    this.stack.push({
+      'function': this.getRangeValue,
+      arguments: [startCell, endCell],
+      'default': []
     });
 
-    return value;
+    return this.stack.length - 1;
   };
 
   /**
@@ -17015,12 +17036,9 @@ var _power2 = _interopRequireDefault(_power);
 
 var _error = __webpack_require__(2);
 
-var _decimal = __webpack_require__(3);
-
-var _decimal2 = _interopRequireDefault(_decimal);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
+/* eslint-disable import/no-named-as-default-member */
 var availableOperators = Object.create(null);
 
 /**
@@ -17030,7 +17048,6 @@ var availableOperators = Object.create(null);
  * @param {Array} [params=[]] Arguments to evaluate.
  * @returns {*}
  */
-/* eslint-disable import/no-named-as-default-member */
 function evaluateByOperator(operator) {
   var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
 
@@ -17087,13 +17104,11 @@ exports.__esModule = true;
 exports.SYMBOL = undefined;
 exports['default'] = func;
 
-var _number = __webpack_require__(4);
-
-var _error = __webpack_require__(2);
-
 var _decimal = __webpack_require__(3);
 
 var _decimal2 = _interopRequireDefault(_decimal);
+
+var _error = __webpack_require__(2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -17105,20 +17120,18 @@ function func(first) {
       rest[_key - 1] = arguments[_key];
     }
 
-    var _result = rest.reduce(function (acc, value) {
+    var result = rest.reduce(function (acc, value) {
       return new _decimal2['default'](acc).plus(new _decimal2['default'](value)).toNumber();
     }, first);
 
-    if (isNaN(_result)) {
+    if (isNaN(result)) {
       throw Error(_error.ERROR_VALUE);
     }
 
-    return _result;
+    return result;
   } catch (error) {
     throw Error(_error.ERROR_VALUE);
   }
-
-  return result;
 }
 
 func.SYMBOL = SYMBOL;
@@ -17157,13 +17170,13 @@ exports.__esModule = true;
 exports.SYMBOL = undefined;
 exports['default'] = func;
 
-var _number = __webpack_require__(4);
-
-var _error = __webpack_require__(2);
-
 var _decimal = __webpack_require__(3);
 
 var _decimal2 = _interopRequireDefault(_decimal);
+
+var _number = __webpack_require__(7);
+
+var _error = __webpack_require__(2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -17175,7 +17188,7 @@ function func(first) {
       rest[_key - 1] = arguments[_key];
     }
 
-    var _result = rest.reduce(function (acc, value) {
+    var result = rest.reduce(function (acc, value) {
       var tempValue = new _decimal2['default'](acc).div(new _decimal2['default']((0, _number.toNumber)(value))).toNumber();
       if (tempValue === Infinity || tempValue === -Infinity) {
         throw Error(_error.ERROR_DIV_ZERO);
@@ -17184,11 +17197,11 @@ function func(first) {
       return tempValue;
     }, (0, _number.toNumber)(first));
 
-    if (isNaN(_result)) {
+    if (isNaN(result)) {
       throw Error(_error.ERROR_VALUE);
     }
 
-    return _result;
+    return result;
   } catch (error) {
     if (error.message === _error.ERROR_DIV_ZERO) {
       throw Error(_error.ERROR_DIV_ZERO);
@@ -17196,8 +17209,6 @@ function func(first) {
 
     throw Error(_error.ERROR_VALUE);
   }
-
-  return result;
 }
 
 func.SYMBOL = SYMBOL;
@@ -17216,10 +17227,10 @@ var SYMBOL = exports.SYMBOL = '=';
 function func(exp1, exp2) {
   if (typeof exp1 === 'string' && typeof exp2 === 'string') {
     return exp1.toUpperCase() === exp2.toUpperCase();
-  } else {
-    return exp1 === exp2;
   }
-};
+
+  return exp1 === exp2;
+}
 
 func.SYMBOL = SYMBOL;
 
@@ -17373,13 +17384,11 @@ exports.__esModule = true;
 exports.SYMBOL = undefined;
 exports['default'] = func;
 
-var _number = __webpack_require__(4);
-
-var _error = __webpack_require__(2);
-
 var _decimal = __webpack_require__(3);
 
 var _decimal2 = _interopRequireDefault(_decimal);
+
+var _error = __webpack_require__(2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -17391,20 +17400,18 @@ function func(first) {
       rest[_key - 1] = arguments[_key];
     }
 
-    var _result = rest.reduce(function (acc, value) {
+    var result = rest.reduce(function (acc, value) {
       return new _decimal2['default'](acc).minus(new _decimal2['default'](value)).toNumber();
     }, first);
 
-    if (isNaN(_result)) {
+    if (isNaN(result)) {
       throw Error(_error.ERROR_VALUE);
     }
 
-    return _result;
+    return result;
   } catch (error) {
     throw Error(_error.ERROR_VALUE);
   }
-
-  return result;
 }
 
 func.SYMBOL = SYMBOL;
@@ -17420,13 +17427,11 @@ exports.__esModule = true;
 exports.SYMBOL = undefined;
 exports['default'] = func;
 
-var _number = __webpack_require__(4);
-
-var _error = __webpack_require__(2);
-
 var _decimal = __webpack_require__(3);
 
 var _decimal2 = _interopRequireDefault(_decimal);
+
+var _error = __webpack_require__(2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -17438,20 +17443,18 @@ function func(first) {
       rest[_key - 1] = arguments[_key];
     }
 
-    var _result = rest.reduce(function (acc, value) {
+    var result = rest.reduce(function (acc, value) {
       return new _decimal2['default'](acc).mul(new _decimal2['default'](value)).toNumber();
     }, first);
 
-    if (isNaN(_result)) {
+    if (isNaN(result)) {
       throw Error(_error.ERROR_VALUE);
     }
 
-    return _result;
+    return result;
   } catch (error) {
     throw Error(_error.ERROR_VALUE);
   }
-
-  return result;
 }
 
 func.SYMBOL = SYMBOL;
@@ -17484,20 +17487,20 @@ exports.__esModule = true;
 exports.SYMBOL = undefined;
 exports['default'] = func;
 
-var _number = __webpack_require__(4);
-
-var _error = __webpack_require__(2);
-
 var _decimal = __webpack_require__(3);
 
 var _decimal2 = _interopRequireDefault(_decimal);
+
+var _number = __webpack_require__(7);
+
+var _error = __webpack_require__(2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 var SYMBOL = exports.SYMBOL = '^';
 
 function func(exp1, exp2) {
-  if (!Number.isInteger((0, _number.toNumber)(exp2))) {
+  if (!Number.isFinite((0, _number.toNumber)(exp2))) {
     throw Error(_error.ERROR_VALUE);
   }
 
@@ -17804,13 +17807,13 @@ var categories = [
   __webpack_require__(37),
   __webpack_require__(13),
   __webpack_require__(39),
-  __webpack_require__(6),
+  __webpack_require__(5),
   __webpack_require__(10),
   __webpack_require__(8),
   __webpack_require__(38),
   __webpack_require__(9),
   __webpack_require__(40),
-  __webpack_require__(7),
+  __webpack_require__(6),
   __webpack_require__(14)
 ];
 
@@ -17826,8 +17829,8 @@ for (var c in categories) {
 /* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var mathTrig = __webpack_require__(6);
-var statistical = __webpack_require__(7);
+var mathTrig = __webpack_require__(5);
+var statistical = __webpack_require__(6);
 var engineering = __webpack_require__(13);
 var dateTime = __webpack_require__(8);
 
@@ -17920,8 +17923,8 @@ exports.ZTEST = statistical.Z.TEST;
 /***/ (function(module, exports, __webpack_require__) {
 
 var error = __webpack_require__(0);
-var stats = __webpack_require__(7);
-var maths = __webpack_require__(6);
+var stats = __webpack_require__(6);
+var maths = __webpack_require__(5);
 var utils = __webpack_require__(1);
 
 function compact(array) {
@@ -19661,7 +19664,7 @@ exports.HLOOKUP = function (needle, table, index, rangeLookup) {
   return error.na;
 };
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ }),
 /* 41 */
@@ -23202,7 +23205,7 @@ var substr = 'ab'.substr(-1) === 'b'
     }
 ;
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ }),
 /* 104 */
@@ -24307,7 +24310,7 @@ if (typeof module !== 'undefined' && __webpack_require__.c[__webpack_require__.s
   exports.main(process.argv.slice(1));
 }
 }
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5), __webpack_require__(105)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4), __webpack_require__(105)(module)))
 
 /***/ })
 /******/ ]);
