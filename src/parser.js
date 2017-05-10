@@ -44,42 +44,22 @@ class Parser extends Emitter {
         return value;
       },
 
-      getRangeValue: (startCell, endCell, sheet) => {
+      getRangeValue: (startCell, endCell) => {
         let value = [];
 
-        try {
-          this.emit('callRangeValue', startCell, endCell, sheet, (_value) => {
-            value = _value;
-          });
-        } catch (error) {
-          if (!(error instanceof TypeError)) {
-            throw error;
-          }
-
-          this.emit('callRangeValue', startCell, endCell, (_value) => {
-            value = _value;
-          });
-        }
+        this.emit('callRangeValue', startCell, endCell, (_value) => {
+          value = _value;
+        });
 
         return value;
       },
 
-      getCellValue: (cellCoordinate, sheet) => {
+      getCellValue: (cellCoordinate) => {
         let value = void 0;
 
-        try {
-          this.emit('callCellValue', cellCoordinate, sheet, (_value) => {
-            value = _value;
-          });
-        } catch (error) {
-          if (!(error instanceof TypeError)) {
-            throw error;
-          }
-
-          this.emit('callCellValue', cellCoordinate, (_value) => {
-            value = _value;
-          });
-        }
+        this.emit('callCellValue', cellCoordinate, (_value) => {
+          value = _value;
+        });
 
         return value;
       },
