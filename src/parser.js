@@ -93,7 +93,9 @@ class Parser extends Emitter {
    * @param {String} expression to parse.
    * @return {*} Returns an object with tow properties `error` and `result`.
    */
-  parse(expression) {
+  parse(expression, options = {}) {
+    const { noEvaluate = false } = options;
+
     let result = null;
     let parsed = null;
     let error = null;
@@ -104,8 +106,6 @@ class Parser extends Emitter {
       } else {
         parsed = this.parser.parse(expression);
       }
-
-      result = this.evaluate(parsed);
     } catch (ex) {
       // console.error(ex)
       const message = errorParser(ex.message);
@@ -114,6 +114,28 @@ class Parser extends Emitter {
         error = message;
       } else {
         error = errorParser(ERROR);
+      }
+    }
+
+    if (noEvaluate) {
+      return {
+        parsed,
+        error,
+      };
+    }
+
+    if (!error) {
+      try {
+        result = this.evaluate(parsed);
+      } catch (ex) {
+        // console.error(ex)
+        const message = errorParser(ex.message);
+
+        if (message) {
+          error = message;
+        } else {
+          error = errorParser(ERROR);
+        }
       }
     }
 
