@@ -94,7 +94,7 @@ class Parser extends Emitter {
    * @return {*} Returns an object with tow properties `error` and `result`.
    */
   parse(expression, options = {}) {
-    const { noEvaluate = false } = options;
+    const { evaluate = true } = options;
 
     let result = null;
     let parsed = null;
@@ -117,7 +117,7 @@ class Parser extends Emitter {
       }
     }
 
-    if (noEvaluate) {
+    if (!evaluate) {
       return {
         parsed,
         error,
